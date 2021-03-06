@@ -1,0 +1,13 @@
+#!/bin/bash
+
+complile_dir=./objs
+source_dir=./src
+
+function InitCompileEnv(){
+    for f in `find $source_dir -type d`
+    do
+        mkdir -p "$complile_dir/$f"
+    done
+}
+
+InitCompileEnv

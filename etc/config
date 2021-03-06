@@ -1,0 +1,18 @@
+{
+    "base":{
+        "cpu":-1,
+        "polling":500
+    },
+    "log":{
+        "path":"/home/xxx.log",
+        "max":"1024",
+        "level":1
+    },
+    "server":[
+        {
+            "address":"tcp@0.0.0.0:80",
+            "route":"default_handle"
+        }
+    ]
+}
+
