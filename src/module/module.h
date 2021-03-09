@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <linux/ioctl.h>
 #include "config.h"
 #include "list.h"
 

@@ -36,6 +36,8 @@ static PRE_DEFINE(MODULE_PRI_PROCESS_INIT) void process_pre_init(void){
 static int fd = 0;
 static akfs_ring_t *ring = NULL;
 
+unsigned long len;
+
 /**
  * @brief process_check 
  * process检测模块
@@ -45,7 +47,9 @@ static int process_check(config_t *gconfig)
     fd=open("/opt/mount/process" ,O_RDWR ,0644);
     assert_error(fd > 0 ,-EACCES);
 
-    ring = (akfs_ring_t *)mmap( NULL ,1025 * PAGE_SIZE ,PROT_READ|PROT_WRITE ,MAP_SHARED ,fd ,0);
+    ioctl(fd ,AKFS_IOCTL_MLEN ,&len);
+
+    ring = (akfs_ring_t *)mmap( NULL ,len ,PROT_READ|PROT_WRITE ,MAP_SHARED ,fd ,0);
     if(ring == MAP_FAILED){
         perror("mmap failed\n");
         goto out;

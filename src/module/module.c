@@ -32,7 +32,7 @@ int module_init(config_t *gconfig)
         assert_break(!ret ,ret = -EACCES);
     }
 
-    return 0;
+    return ret;
 }
 
 /**

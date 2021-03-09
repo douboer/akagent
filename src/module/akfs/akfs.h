@@ -6,7 +6,14 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <linux/ioctl.h>
+#include <sys/ioctl.h>
 #include "ring.h"
+
+#define AKFS_IOCTL_MAGIC 'a'
+
+#define AKFS_IOCTL_MLEN _IO(AKFS_IOCTL_MAGIC ,0)
+
 
 typedef struct akfs_process_s{
     unsigned int type;
