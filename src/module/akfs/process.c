@@ -33,10 +33,7 @@ static PRE_DEFINE(MODULE_PRI_PROCESS_INIT) void process_pre_init(void){
     module_register(&gprocess);
 }
 
-static int fd = 0;
-static akfs_ring_t *ring = NULL;
-
-unsigned long len;
+static akfs_t gat;
 
 /**
  * @brief process_check 
@@ -44,22 +41,18 @@ unsigned long len;
  */
 static int process_check(config_t *gconfig)
 {
-    fd=open("/opt/mount/process" ,O_RDWR ,0644);
-    assert_error(fd > 0 ,-EACCES);
+    int ret = 0;
 
-    ioctl(fd ,AKFS_IOCTL_MLEN ,&len);
+    ret = akfs_open(&gat ,"/opt/mount/process");
+    assert_error(!ret ,ret);
 
-    ring = (akfs_ring_t *)mmap( NULL ,len ,PROT_READ|PROT_WRITE ,MAP_SHARED ,fd ,0);
-    if(ring == MAP_FAILED){
-        perror("mmap failed\n");
-        goto out;
-    }
+    ret = akfs_get_access(&gat);
+    assert_goto(!ret ,out ,akfs_close(&gat););
 
-    return 0;
 out:
-    close(fd);
-    return -1;
+    return 0;
 }
+
 /**
  * @brief process_init 
  *   process 初始化模块
@@ -70,28 +63,20 @@ static int process_init(config_t *gconfig)
     return 0;
 }
 
+static int process_callback(unsigned char *buffer ,unsigned int size)
+{
+    akfs_process_t *p = NULL;
+
+    p = (akfs_process_t *)buffer;
+    printf("type:[%d] pid %d tpath:[%s] ns:[%u]\n" ,
+            p->type ,p->pid ,p->tpath ,p->ns);
+
+    return 0;
+}
+
 int process_test(struct sched_task_s *task)
 {
-    unsigned int size = 0;
-    akfs_process_t *p= NULL;
-    unsigned char buffer[PAGE_SIZE] = {0};
-
-    printf("PAGE_SIZE is %d\n" ,PAGE_SIZE);
-
-    do{
-        sleep(1);
-        do{
-            size = __akfs_ring_get(ring ,buffer ,PAGE_SIZE);
-            if(!size){
-                printf("__akfs_ring_get %u\n" ,size);
-                break;
-            }
-
-            p = (akfs_process_t *)buffer;
-            printf("type:[%d] pid %d tpath:[%s] ns:[%u]\n" ,
-                    p->type ,p->pid ,p->tpath ,p->ns);
-        }while(1);
-    }while(1);
+    akfs_loop_read(&gat ,process_callback);
 
     return TASK_RUNNING;
 }
