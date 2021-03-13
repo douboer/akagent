@@ -68,8 +68,6 @@ static int process_callback(unsigned char *buffer ,unsigned int size)
     akfs_process_t *p = NULL;
 
     p = (akfs_process_t *)buffer;
-    printf("type:[%d] pid %d tpath:[%s] ns:[%u]\n" ,
-            p->type ,p->pid ,p->tpath ,p->ns);
 
     return 0;
 }

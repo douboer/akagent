@@ -130,8 +130,12 @@ void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
 {
     unsigned int size = 0;
     int ret = 0;
+    struct pollfd pd;
+
+    pd.fd = at->fd;
+    pd.events = POLLIN | POLLERR;
+
     do{
-        sleep(1);
         do{
             size = at->read(at);;
             if(!size){
@@ -144,5 +148,6 @@ void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
             }
 
        }while(1);
+        ret = poll(&pd ,2 ,-1);
     }while(1);
 }

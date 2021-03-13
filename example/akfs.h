@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <poll.h>
 
 /**
  * @brief akfs ring
@@ -80,13 +81,16 @@ struct akfs_s{
  * @brief akfs进程数据结构体 
  */
 typedef struct akfs_process_s{
-    unsigned int type;
+    unsigned int data_type;
     pid_t pid;
     pid_t ppid;
     uid_t uid;
+    pid_t gid;
     unsigned int ns;
-    char tpath[256];
-    char ppath[256];
+    char timestamp[32];
+    char exec_hash[64];
+    char exec_file[256];
+    char argv[256];
 }akfs_process_t;
 
 #ifndef PAGE_SIZE
