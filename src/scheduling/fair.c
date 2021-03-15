@@ -6,8 +6,6 @@
  */
 int sched_fair_put(sched_rt_t *gsched ,sched_task_t *task)
 {
-    printf("sched_fair_put running\n");
-
     pthread_mutex_lock(&gsched->qlock);
 
     list_add_tail(&task->list ,&gsched->queue);

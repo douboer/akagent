@@ -2,7 +2,6 @@
 
 static lb_global_t glb;
 
-static void __lb_ops_init(void);
 static int __lb_init(config_t *gconfig);
 static void __lb_event_process(void);
 static void __lb_event_post_process(struct list_head *queue);
@@ -19,8 +18,6 @@ static module_t glb_module = {
  */
 static PRE_DEFINE(NDRV_PRI_INIT) void __lb_pre_init(void)
 {
-    __lb_ops_init();
-
 #if defined(__USE_UNIX__)
     glb.lb_wait = __lb_epoll_wait;
 #elif defined(__USE_WIN32__)
@@ -33,30 +30,14 @@ static PRE_DEFINE(NDRV_PRI_INIT) void __lb_pre_init(void)
 }
 
 /**
- * @brief __lb_ops_init 
- *   初始化lb操作函数
- */
-static void __lb_ops_init(void)
-{
-#if defined(__USE_UNIX__)
-
-    glb.ops.add = __lb_epoll_add;
-    glb.ops.del = __lb_epoll_del;
-
-#elif defined(__USE_WIN32__)
-#else
-    printf("The system is not supported!\n");
-    exit(0);
-#endif
-}
-
-/**
  * @brief __lb_init 
  *   解析配置文件
  */
 static int __lb_init(config_t *gconfig)
 {
-    gconfig->event_operation = &glb.ops;
+    list_head_init(&glb.accept_queue);
+
+    list_head_init(&glb.post_queue);
 
     return 0;
 }
@@ -106,8 +87,8 @@ static void __lb_event_post_process(struct list_head *queue)
 
         lv = (lb_event_t *)list_entry(pos ,lb_event_t ,list);
 
-        //丢到定时任务上去
-        ret = lv->handle(lv);
-        assert_continue(!ret ,);
+        lv->handle(lv);
+        //ret = lv->handle(lv);
+        //assert_continue(!ret ,);
     }
 }

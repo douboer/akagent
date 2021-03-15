@@ -9,7 +9,6 @@ static sched_rt_t gsched;
  * @brief 内置函数
  */
 static int __sched_init(config_t *gconfig);
-static void __sched_ops_init(void);
 
 static int __sched_config_parse(config_t *gconfig);
 static int __sched_thread_init(config_t *gconfig);
@@ -55,20 +54,7 @@ static PRE_DEFINE(TIMING_PRI_INIT) void __sched_pre_init(config_t *gconfig)
 
     gsched.put = sched_fair_put;
 
-    __sched_ops_init();
-
     module_register(&gsched_module);
-}
-
-/**
- * @brief __sched_ops_init 
- *   调度模块初始化操作函数
- */
-static void __sched_ops_init(void)
-{
-    gsched.ops.alloc = sched_task_alloc;
-    gsched.ops.free = sched_task_free;
-    gsched.ops.reg = sched_task_register;
 }
 
 /**
@@ -77,12 +63,6 @@ static void __sched_ops_init(void)
  */
 static int __sched_init(config_t *gconfig)
 {
-    gconfig->sched_operation = &gsched.ops;
-
-    gsched.ev_ops = gconfig->event_operation;
-
-    gsched.sym_ops = gconfig->sym_operation;
-
     //解析配置文件
     assert_error(!__sched_config_parse(gconfig) ,-EACCES);
 
@@ -328,10 +308,6 @@ sched_task_t *sched_task_alloc(void)
     task = (sched_task_t *)malloc(sizeof(sched_task_t));
     assert_error(task ,NULL);
    
-    task->sched_ops = &gsched.ops;
-    task->ev_ops = gsched.ev_ops;
-    task->sym_ops = gsched.sym_ops; 
-
     return task;
 }
 

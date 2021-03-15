@@ -7,7 +7,9 @@
 #include "config.h"
 #include "list.h"
 
+#include "lb.h"
 #include "scheduling.h"
+#include "assertion.h"
 
 /**
  * @brief 模块元素定义

@@ -24,17 +24,10 @@
  *  p 配置文件路径
  *  cpus 需要开启的线程数
  *  polling 定时任务轮询的时间
- *  sched_operation 定时任务相关操作
- *      任务创建 添加任务
- *  event_operation 事件相关操作
- *      添加一个描述符到事件上
  */
 typedef struct config_s{
     char *path;
     cJSON *json_ptr;
-    const void *sym_operation;
-    const void *sched_operation;
-    const void *event_operation;
     unsigned int cpus;
     unsigned int h : 1;
     unsigned int d : 1;

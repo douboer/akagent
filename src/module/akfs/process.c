@@ -1,15 +1,10 @@
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include "module.h"
-#include "akfs.h"
+#include "process.h"
 
 #define MODULE_PRI_PROCESS_INIT (MODULE_PRI_DEF + 1)
 
 static int process_init(config_t *gconfig);
 static int process_check(config_t *gconfig);
+static int process_task_register(config_t *gconfig);
 
 void process_task_run(config_t *gconfig);
 
@@ -34,6 +29,7 @@ static PRE_DEFINE(MODULE_PRI_PROCESS_INIT) void process_pre_init(void){
 }
 
 static akfs_t gat;
+static lb_event_t glv;
 
 /**
  * @brief process_check 
@@ -41,15 +37,6 @@ static akfs_t gat;
  */
 static int process_check(config_t *gconfig)
 {
-    int ret = 0;
-
-    ret = akfs_open(&gat ,"/opt/mount/process");
-    assert_error(!ret ,ret);
-
-    ret = akfs_get_access(&gat);
-    assert_goto(!ret ,out ,akfs_close(&gat););
-
-out:
     return 0;
 }
 
@@ -59,27 +46,63 @@ out:
  */
 static int process_init(config_t *gconfig)
 {
-    process_task_run(gconfig);
+    assert_error(!process_task_register(gconfig) ,-EACCES);
+
     return 0;
 }
 
-static int process_callback(unsigned char *buffer ,unsigned int size)
+static int process_event_handle(struct lb_event_s *lv)
 {
+    unsigned int size = 0;
     akfs_process_t *p = NULL;
 
-    p = (akfs_process_t *)buffer;
+    printf("process_event_handle..\n");
+
+    do{
+        size = gat.read(&gat);
+        assert_break(size > 0 ,); 
+
+        p = (akfs_process_t *)gat.buffer;
+        printf("type:[%d] pid %d ppid %d tgid %d tpath:[%s] ns:[%u] args:[%s] hash:[%s] timestamp[%ld]\n" ,p->data_type ,p->pid ,p->ppid ,p->gid ,
+                p->exec_file ,p->ns ,p->argv ,p->exec_hash ,p->timestamp);
+
+    }while(1);
 
     return 0;
 }
 
-int process_test(struct sched_task_s *task)
+static int process_handle(struct sched_task_s *task)
 {
-    akfs_loop_read(&gat ,process_callback);
+    int status = TASK_RUNNING ,ret = 0;
+    
+    printf("process_handle....\n");
 
-    return TASK_RUNNING;
+    ret = akfs_open(&gat ,"/opt/mount/process");
+    assert_goto(!ret ,out ,);
+
+    ret = akfs_get_access(&gat);
+    assert_goto(!ret ,out ,akfs_close(&gat););
+
+    glv.fd = gat.fd;
+    glv.type = LB_EVENT_CLIENT;
+    glv.handle = process_event_handle;
+
+    ret = lb_event_add(&glv);
+    printf("lb_event_add ret %d\n" ,ret);
+
+    status = TASK_EXIT;
+
+out:
+    return status;
 }
 
-void process_task_run(config_t *gconfig)
+/**
+ * @brief process_task_register 
+ *   初始化的时候注册一个任务
+ *   当和akfs交互成功之后任务退出
+ *   从ring里面读取数据
+ */
+static int process_task_register(config_t *gconfig)
 {
     sched_task_t *task = NULL;
 
@@ -87,9 +110,11 @@ void process_task_run(config_t *gconfig)
 
     task->name = "process";
 
-    task->handle = process_test;
+    task->handle = process_handle;
 
     task->polling = 500;
 
     sched_task_register(task);
+
+    return 0;
 }

@@ -23,6 +23,7 @@
 enum __lb_event_type_s{
     LB_EVENT_INIT   = 1,
     LB_EVENT_ACCEPT = 2,
+    LB_EVENT_CLIENT = 4,
 };
 
 /**
@@ -51,7 +52,6 @@ int (*del)(lb_event_t *lv);
  */
 typedef struct lb_global_s{
     void (*lb_wait)(struct lb_global_s *);
-    lb_operation_t ops;
     struct list_head post_queue;
     struct list_head accept_queue;
 }lb_global_t;
@@ -59,8 +59,10 @@ typedef struct lb_global_s{
 #if defined(__USE_UNIX__)
 
 int __lb_epoll_add(lb_event_t *lv);
+#define lb_event_add __lb_epoll_add
 
 int __lb_epoll_del(lb_event_t *lv);
+#define lb_event_del __lb_epoll_del
 
 void __lb_epoll_wait(lb_global_t *glb);
 

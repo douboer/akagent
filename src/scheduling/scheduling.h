@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include "config.h"
-#include "sym.h"
 #include "module.h"
 
 typedef struct sched_rt_s sched_rt_t;
@@ -44,9 +43,6 @@ struct sched_task_s{
     struct list_head list;
     const char *name;
     int (*handle)(struct sched_task_s *task);
-    const void *sched_ops;
-    const void *ev_ops;
-    const void *sym_ops; 
     unsigned int polling;
     void *reserve;
 };
@@ -65,9 +61,6 @@ struct sched_rt_s{
     pthread_t *tarray;
     int (*put)(sched_rt_t *sched ,sched_task_t *);
     sched_task_t *(*get)(sched_rt_t *gsched);
-    const void *ev_ops;
-    const void *sym_ops; 
-    sched_task_operation_t ops;
     unsigned int polling;
 };
 

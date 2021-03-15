@@ -37,18 +37,16 @@ void __lb_epoll_wait(lb_global_t *glb)
     struct list_head *h = NULL;
     struct epoll_event evs[512];
 
-    for(;;){
-        n = epoll_wait(epfd ,evs ,sizeof(evs) ,500);        
-        assert_continue(n >0 ,);
+    n = epoll_wait(epfd ,evs ,sizeof(evs) ,500);        
+    assert_ret(n >0);
 
-        for(i = 0 ;i < n ;i++){
-            lv = (lb_event_t *)evs[i].data.ptr;    
+    for(i = 0 ;i < n ;i++){
+        lv = (lb_event_t *)evs[i].data.ptr;    
 
-            h = lv->type & LB_EVENT_ACCEPT ? 
-                &glb->accept_queue : &glb->post_queue;
+        h = lv->type & LB_EVENT_ACCEPT ? 
+            &glb->accept_queue : &glb->post_queue;
 
-            list_add_tail(&lv->list ,h);           
-        }
+        list_add_tail(&lv->list ,h);           
     }
 }
 
