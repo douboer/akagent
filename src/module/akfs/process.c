@@ -63,7 +63,7 @@ static int process_event_handle(struct lb_event_s *lv)
         assert_break(size > 0 ,); 
 
         p = (akfs_process_t *)gat.buffer;
-        printf("type:[%d] pid %d ppid %d tgid %d tpath:[%s] ns:[%u] args:[%s] hash:[%s] timestamp[%ld]\n" ,p->data_type ,p->pid ,p->ppid ,p->gid ,
+        printf("type:[%d] pid %d ppid %d gid %d tpath:[%s] ns:[%u] args:[%s] hash:[%s] timestamp[%ld]\n" ,p->data_type ,p->pid ,p->ppid ,p->gid ,
                 p->exec_file ,p->ns ,p->argv ,p->exec_hash ,p->timestamp);
 
     }while(1);

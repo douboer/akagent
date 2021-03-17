@@ -80,7 +80,6 @@ static void __lb_event_post_process(struct list_head *queue)
 {
     struct list_head *pos = NULL ,*tmp = NULL;
     lb_event_t *lv = NULL;
-    int ret;
 
     list_for_each_safe(pos ,tmp ,queue){
         list_del_init(pos);
@@ -88,7 +87,5 @@ static void __lb_event_post_process(struct list_head *queue)
         lv = (lb_event_t *)list_entry(pos ,lb_event_t ,list);
 
         lv->handle(lv);
-        //ret = lv->handle(lv);
-        //assert_continue(!ret ,);
     }
 }
