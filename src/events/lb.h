@@ -15,6 +15,7 @@
 
 #include "config.h"
 #include "module.h"
+#include "scheduling.h"
 
 
 /**
@@ -32,7 +33,7 @@ enum __lb_event_type_s{
 typedef struct lb_event_s{
     int fd;
     int type;
-    int (*handle)(struct lb_event_s *);
+    int (*handle)(void *);
     struct list_head list;
     struct sockaddr_in addr;
 }lb_event_t;

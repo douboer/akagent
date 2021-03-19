@@ -22,6 +22,8 @@ static void __sched_worker_wakeup(void);
 static void __sched_worker_wait(void);
 static void __sched_task_refresh(sched_task_t *task);
 
+static int __sched_is_idle(void);
+
 /**
  * @brief sched的初始化模块 
  */
@@ -160,7 +162,6 @@ static inline void __sched_polling_time(void){
 static void *__sched_master_process(void *args)
 {
     sched_task_t *task = NULL;
-    int need = 0;
 
     pthread_detach(pthread_self());
 
@@ -175,12 +176,10 @@ static void *__sched_master_process(void *args)
 
             //将任务丢到执行队列
             gsched.put(&gsched ,task);
-
-            need = 1;
         }while(1);
 
         //有任务则唤醒worker线程
-        assert_void(!need ,need = 0;__sched_worker_wakeup(););
+        assert_void(__sched_is_idle() ,__sched_worker_wakeup(););
     }
 
     pthread_exit("exit");
@@ -218,6 +217,15 @@ static void *__sched_worker_process(void *args)
 }
 
 /**
+ * @brief __sched_is_wakeup 
+ *   master线程定时检查就绪队列是否为空
+ *  1队列为空 不需要唤醒表示不需要唤醒
+ */
+static int __sched_is_idle(void){
+    return list_empty_careful(&gsched.queue);
+}
+
+/**
  * @brief __sched_worker_wakeup 
  *   worker线程唤醒
  */
@@ -225,7 +233,7 @@ static void __sched_worker_wakeup(void)
 {
     pthread_mutex_lock(&gsched.wlock);
 
-    pthread_cond_broadcast(&gsched.condition);
+    pthread_cond_signal(&gsched.condition);
 
     pthread_mutex_unlock(&gsched.wlock);
 }

@@ -51,10 +51,11 @@ static int process_init(config_t *gconfig)
     return 0;
 }
 
-static int process_event_handle(struct lb_event_s *lv)
+static int process_event_handle(void *data)
 {
     unsigned int size = 0;
     akfs_process_t *p = NULL;
+    sched_task_t *task = (sched_task_t *)data;
 
     printf("process_event_handle..\n");
 
@@ -68,10 +69,12 @@ static int process_event_handle(struct lb_event_s *lv)
 
     }while(1);
 
-    return 0;
+    lb_event_add(task->reserve);
+
+    return TASK_EXIT;
 }
 
-static int process_handle(struct sched_task_s *task)
+static int process_handle(void *task)
 {
     int status = TASK_RUNNING ,ret = 0;
     

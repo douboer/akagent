@@ -42,7 +42,7 @@ struct sched_task_s{
     rbnode_t rbnode;
     struct list_head list;
     const char *name;
-    int (*handle)(struct sched_task_s *task);
+    int (*handle)(void *);
     unsigned int polling;
     void *reserve;
 };

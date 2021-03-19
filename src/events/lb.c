@@ -5,6 +5,7 @@ static lb_global_t glb;
 static int __lb_init(config_t *gconfig);
 static void __lb_event_process(void);
 static void __lb_event_post_process(struct list_head *queue);
+static void __lb_event_scheduling(lb_event_t *lv);
 
 static module_t glb_module = {
     .name = "glb" ,
@@ -86,6 +87,35 @@ static void __lb_event_post_process(struct list_head *queue)
 
         lv = (lb_event_t *)list_entry(pos ,lb_event_t ,list);
 
+        //server fd在epoll主流程处理accept
+        //client fd丢到定时队列去处理
+        assert_continue(lv->type & LB_EVENT_ACCEPT ,
+                __lb_event_scheduling(lv));
+
         lv->handle(lv);
     }
+}
+
+/**
+ * @brief __lb_event_scheduling 
+ *   将唤醒的fd从epoll剔除
+ *   丢入到定时队列
+ */
+static void __lb_event_scheduling(lb_event_t *lv)
+{
+    sched_task_t *task = NULL;
+
+    lb_event_del(lv);
+
+    task = sched_task_alloc();
+
+    task->name = "lv";
+
+    task->handle = lv->handle;
+
+    task->polling = 500;
+
+    task->reserve = lv;
+
+    sched_task_register(task);
 }

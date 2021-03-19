@@ -8,5 +8,7 @@
 #include <fcntl.h>
 #include "module.h"
 #include "akfs.h"
+#include "lb.h"
+#include "scheduling.h"
 
 #endif
