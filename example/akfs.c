@@ -46,14 +46,43 @@ static int akfs_def_get_msize(akfs_t *at){
 }
 
 /**
+* @brief akfs_def_otp 
+*   otp默认算法
+*   根据需要可更改
+*/
+static void akfs_def_otp(akfs_otp_t *otp)
+{
+    otp->seed++;
+}
+
+/**
  * @brief akfs_def_access 
  *   otp 校验接口
  *   可根据需要调整算法，需要和akfs对应接口一致即可
  */
-static int akfs_def_access(akfs_t *at){
+static int akfs_def_access(akfs_t *at)
+{
+    int ret = 0;
+
+    //otp请求
+    at->otp.status = AKFS_FSA_REQ;
+    ret = ioctl(at->fd ,AKFS_IOCTL_OTP ,&at->otp);
+    assert_error(!ret && (at->otp.status == AKFS_FSA_REPLY) ,-EACCES);
+
+    //otp计算
+    akfs_def_otp(&at->otp);
+
+    //otp应答
+    ret = ioctl(at->fd ,AKFS_IOCTL_OTP ,&at->otp);
+    assert_error(!ret ,-EACCES);
+
     return 0;
 }
 
+/**
+ * @brief akfs_def_read 
+ *   从ring读取一条记录
+ */
 static int akfs_def_read(akfs_t *at){
     return akfs_ring_get(at->ring ,at->buffer ,at->blen);
 }
@@ -147,7 +176,7 @@ void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
                 return;
             }
 
-       }while(1);
+        }while(1);
         ret = poll(&pd ,2 ,-1);
     }while(1);
 }
