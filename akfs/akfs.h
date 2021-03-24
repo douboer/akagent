@@ -16,6 +16,73 @@
 #include <poll.h>
 
 /**
+ * @brief  assert_error
+ *
+ * @param condition
+ * @param error
+ *
+ * @return
+ */
+#define  assert_error(condition ,error) do{ \
+    if(!(condition)){   \
+        return (error); \
+    }   \
+}while(0)
+
+/**
+ * @brief  assert_ret
+ *
+ * @param !(condition)
+ *
+ * @return
+ */
+#define  assert_ret(condition)  \
+    if(!(condition)){   \
+        return; \
+    }
+
+/**
+ * @brief  assert_goto
+ *
+ * @param condition
+ * @param label
+ * @param !(condition
+ *
+ * @return
+ */
+#define  assert_goto(condition ,label ,ops) \
+    if(!(condition)){   \
+        ops;    \
+        goto label; \
+    }
+
+#define  assert_break(condition ,ops) \
+    if(!(condition)){   \
+        ops;    \
+        break; \
+    }
+
+#define  assert_continue(condition ,ops) \
+    if(!(condition)){   \
+        ops;    \
+        continue; \
+    }
+/**
+ * @brief  assert_void
+ *
+ * @param condition
+ * @param ops
+ *
+ * @return
+ */
+#define  assert_void(condition ,ops)    do{ \
+    if(!(condition)){   \
+        ops;    \
+    }   \
+}while(0)
+
+
+/**
  * @brief akfs ring
  */
 typedef struct akfs_ring_s{
@@ -46,9 +113,10 @@ unsigned int akfs_ring_get(akfs_ring_t *,unsigned char *,unsigned int);
  *@brief otp交互状态
  */
 enum AKFS_FSA_S{
-    AKFS_FSA_REQ    = 1,
-    AKFS_FSA_ACCESS = 2,
-    AKFS_FSA_REPLY  = 4,
+    AKFS_FSA_WAIT    = 1,
+    AKFS_FSA_REQ     = 2,
+    AKFS_FSA_REPLY   = 4,
+    AKFS_FSA_ACCESS  = 8,
 };
 
 /**

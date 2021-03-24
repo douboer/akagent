@@ -23,7 +23,6 @@ type ProcessMonitor struct {
 	GroupName string `json:"group_name"`                      //组名
 	Namespace uint32 `json:"namespace"`                       //进程命名空间ID
 	Timestamp uint64 `json:"timestamp"`                       //事件时间戳
-
 }
 
 //ProcessAnaly 进程数据解析
@@ -39,7 +38,6 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 
 	usr, err := user.LookupId(fmt.Sprintf("%d", p.Uid))
 	if err == nil {
-		log.Println(usr)
 		p.UserName = usr.Username
 	}
 
@@ -47,7 +45,6 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 	p.Gid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	Ginfo, err := user.LookupGroupId(fmt.Sprintf("%d", p.Gid))
 	if err == nil {
-		log.Println(Ginfo)
 		p.GroupName = Ginfo.Name
 	}
 
@@ -67,8 +64,13 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 
 func (p *ProcessMonitor) Report() {
 	bytesData, _ := json.Marshal(p)
+	if p.Ppid == 0 {
+		return
+	}
+	if p.Exe_hash != "4d037094cb4d29c0d331caf827df3539" {
+		log.Print(string(bytesData))
+	}
 
-	log.Print(string(bytesData))
 	//httpreport := report.HttpReport{
 	//	Content: bytesData,
 	//	TargetUrl: "https://127.0.0.1/monitor/process",
