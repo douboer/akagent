@@ -152,10 +152,12 @@ typedef struct akfs_process_s{
     unsigned int data_type;
     pid_t pid;
     pid_t ppid;
+    pid_t real_ppid;
     uid_t uid;
     pid_t gid;
     unsigned int ns;
     u_int64_t timestamp;
+    char parent_file[64];
     char exec_hash[64];
     char exec_file[256];
     char argv[256];
