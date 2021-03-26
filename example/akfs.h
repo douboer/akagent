@@ -151,7 +151,7 @@ typedef struct akfs_process_s{
     unsigned int data_type;
     pid_t pid;
     pid_t ppid;
-    pid_t real_ppid;
+    pid_t tgid;
     uid_t uid;
     pid_t gid;
     unsigned int ns;
