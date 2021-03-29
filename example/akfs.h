@@ -148,6 +148,7 @@ struct akfs_s{
  * @brief akfs进程数据结构体 
  */
 typedef struct akfs_process_s{
+    u_int64_t timestamp;
     unsigned int data_type;
     pid_t pid;
     pid_t ppid;
@@ -155,7 +156,6 @@ typedef struct akfs_process_s{
     uid_t uid;
     pid_t gid;
     unsigned int ns;
-    u_int64_t timestamp;
     char parent_name[64];
     char exec_hash[64];
     char exec_file[256];
