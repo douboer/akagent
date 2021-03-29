@@ -148,18 +148,22 @@ struct akfs_s{
 /**
  * @brief akfs进程数据结构体
  */
+
 typedef struct akfs_process_s{
-    unsigned int data_type;
-    pid_t pid;
-    pid_t ppid;
-    uid_t uid;
-    pid_t gid;
-    unsigned int ns;
-    u_int64_t timestamp;
-    char exec_hash[64];
-    char exec_file[256];
-    char argv[256];
+    unsigned int data_type;			//事件类型
+    pid_t pid;						//进程pid
+    pid_t ppid;						//父进程pid
+    pid_t tgid;						//父进程tgdi
+    uid_t uid;						//进程用户id
+    pid_t gid;						//进程组id
+    unsigned int ns;				//进程命名空间
+    u_int64_t timestamp;				//捕获时间戳
+    char parent_name[64];			//父进程名
+    char exec_hash[64];				//进程文件hash
+    char exec_file[256];			//进程全路径
+    char argv[256];					//进程执行时的参数
 }akfs_process_t;
+
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
