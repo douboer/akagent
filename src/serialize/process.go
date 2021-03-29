@@ -13,7 +13,7 @@ type ProcessMonitor struct {
 	Exe_hash  string `json:"exe_hash"`                        //文件hash
 	Pid       uint32 `json:"pid"`                             //进程id
 	Ppid      uint32 `json:"ppid"`                            //父进程ID
-	Tgid	  uint32 `json:"tgid"`                            //父进程TGID
+	Ptgid	  uint32 `json:"ptgid"`                            //父进程TGID
 	Data_type uint32 `json:"data_type" enum:"1001,1002,1003"` //数据类型
 	Argv      string `json:"argv"`                            //进程参数
 	ParentName string	`json:"parent_name"`				  //父进程名
@@ -37,7 +37,7 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 	p.Ppid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
 
-	p.Tgid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
+	p.Ptgid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
 
 

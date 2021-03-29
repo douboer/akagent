@@ -153,7 +153,7 @@ typedef struct akfs_process_s{
     unsigned int data_type;			//事件类型
     pid_t pid;						//进程pid
     pid_t ppid;						//父进程pid
-    pid_t tgid;						//父进程tgdi
+    pid_t ptgid;					//父进程tgdi
     uid_t uid;						//进程用户id
     pid_t gid;						//进程组id
     unsigned int ns;				//进程命名空间
