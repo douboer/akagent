@@ -28,6 +28,10 @@ type ProcessMonitor struct {
 //ProcessAnaly 进程数据解析
 func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 	offset := 0
+
+    p.Timestamp = binary.LittleEndian.Uint64(monitorData[offset : offset+8])
+	offset += 8
+
 	p.Data_type = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
 
@@ -40,14 +44,12 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 	p.Ptgid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
 
-
 	p.Uid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
 	usr, err := user.LookupId(fmt.Sprintf("%d", p.Uid))
 	if err == nil {
 		p.UserName = usr.Username
 	}
-
 
 	p.Gid = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
 	offset += 4
@@ -56,15 +58,11 @@ func (p *ProcessMonitor) NewProcess(monitorData []byte) {
 		p.GroupName = Ginfo.Name
 	}
 
+    p.Namespace = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
+    offset += 4
 
-	p.Namespace = binary.LittleEndian.Uint32(monitorData[offset : offset+4])
-	offset += 4
-
-	p.Timestamp = binary.LittleEndian.Uint64(monitorData[offset : offset+8])
-	offset += 8
-
-	p.ParentName = string(bytes.Trim(monitorData[offset:offset+64], "\x00"))
-	offset += 64
+    p.ParentName = string(bytes.Trim(monitorData[offset:offset+64], "\x00"))
+    offset += 64
 
 	p.Exe_hash = string(bytes.Trim(monitorData[offset:offset+64], "\x00"))
 	offset += 64
