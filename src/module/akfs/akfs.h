@@ -161,7 +161,7 @@ typedef struct akfs_process_s{
     char exec_hash[64];
     char exec_file[256];
     char argv[256];
-}akfs_process_t;
+}akfs_process_t __attribute__((aligned(8)));
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
