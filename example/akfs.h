@@ -162,6 +162,19 @@ typedef struct akfs_process_s{
     char argv[256];
 }akfs_process_t __attribute__((aligned(8)));
 
+typedef struct akfs_file_s{
+    u_int64_t timestamp;
+    unsigned int data_type;
+    pid_t pid;
+    pid_t ppid;
+    pid_t ptgid;
+    uid_t uid;
+    pid_t gid;
+    unsigned int ns;
+    char exec_file[256];
+    char chg_file[256];
+}akfs_file_t __attribute__((aligned(8)));
+
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
 #endif
