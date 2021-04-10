@@ -108,6 +108,8 @@ unsigned int akfs_ring_get(akfs_ring_t *,unsigned char *,unsigned int);
 
 #define AKFS_IOCTL_OTP _IO(AKFS_IOCTL_MAGIC ,20)
 
+#define AKFS_IOCTL_POLICY _IO(AKFS_IOCTL_MAGIC ,30)
+
 /**
  *@brief otp交互状态 
  */

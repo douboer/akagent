@@ -23,11 +23,19 @@ int main(void)
     ret = akfs_open(&gat ,"/opt/mount/process");
     if(ret){return ret;} 
 
+    ret = ioctl(gat.fd ,AKFS_IOCTL_POLICY ,"hello world 123");
+    printf("before AKFS_IOCTL_POLICY ret %d\n" ,ret);
+
+
     ret = akfs_get_access(&gat);
     if(ret){
         akfs_close(&gat);
         goto out;
     }
+
+    ret = ioctl(gat.fd ,AKFS_IOCTL_POLICY ,"hello world 123");
+    printf("after AKFS_IOCTL_POLICY ret %d\n" ,ret);
+
 
     akfs_loop_read(&gat ,process_callback);
 
