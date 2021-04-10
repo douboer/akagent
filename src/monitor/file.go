@@ -92,26 +92,28 @@ func NewFileMonitor() *FileMonitor {
 
 func (f *FileMonitor)MonitorStart(){
 
-	akfs.FileMonitor()
+	go func() {
+		akfs.FileMonitor()
 
-	data := make([]byte, 2048)
-	localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.FileUsedPort))
-	udplistener, err := net.ListenUDP("udp", localaddress)
-	if err != nil {
-		log.Print(err.Error())
-		return
-	}
-	defer udplistener.Close()
-
-	for {
-		n, _, err := udplistener.ReadFromUDP(data[0:])
+		data := make([]byte, 2048)
+		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.FileUsedPort))
+		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
-			log.Println(err.Error())
+			log.Print(err.Error())
 			return
 		}
-		f.Analy(data[0:n])
-		f.Report()
-	}
+		defer udplistener.Close()
+
+		for {
+			n, _, err := udplistener.ReadFromUDP(data[0:])
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
+			f.Analy(data[0:n])
+			f.Report()
+		}
+	}()
 }
 
 func (p *FileMonitor)Analy(data []byte){

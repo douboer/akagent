@@ -32,26 +32,28 @@ func NewProcessMonitor() *ProcessMonitor {
 
 func (p *ProcessMonitor)MonitorStart(){
 
-	akfs.PsMonitor()
+	go func() {
+		akfs.PsMonitor()
 
-	data := make([]byte, 2048)
-	localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.PsUsedPort))
-	udplistener, err := net.ListenUDP("udp", localaddress)
-	if err != nil {
-		log.Print(err.Error())
-		return
-	}
-	defer udplistener.Close()
-
-	for {
-		n, _, err := udplistener.ReadFromUDP(data[0:])
+		data := make([]byte, 2048)
+		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.PsUsedPort))
+		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
-			log.Println(err.Error())
+			log.Print(err.Error())
 			return
 		}
-		p.Analy(data[0:n])
-		p.Report()
-	}
+		defer udplistener.Close()
+
+		for {
+			n, _, err := udplistener.ReadFromUDP(data[0:])
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
+			p.Analy(data[0:n])
+			p.Report()
+		}
+	}()
 }
 
 func (p *ProcessMonitor)Analy(data []byte){
