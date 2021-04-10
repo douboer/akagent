@@ -1,7 +1,7 @@
 #include "akfs.h"
 
 /**
- * @brief akfs_ring_get
+ * @brief akfs_ring_get 
  *   从ring里面读取数据，多线程需要自己加锁
  */
 unsigned int akfs_ring_get(akfs_ring_t *ring ,unsigned char *data ,unsigned int len)
@@ -22,7 +22,7 @@ unsigned int akfs_ring_get(akfs_ring_t *ring ,unsigned char *data ,unsigned int 
 }
 
 /**
- * @brief akfs_def_close
+ * @brief akfs_def_close 
  *   akfs 关闭接口 释放资源
  */
 static void akfs_def_close(akfs_t *at){
@@ -38,7 +38,7 @@ static void akfs_def_close(akfs_t *at){
 }
 
 /**
- * @brief akfs_def_get_msize
+ * @brief akfs_def_get_msize 
  *   获取mmap需要映射的长度
  */
 static int akfs_def_get_msize(akfs_t *at){
@@ -46,7 +46,7 @@ static int akfs_def_get_msize(akfs_t *at){
 }
 
 /**
-* @brief akfs_def_otp
+* @brief akfs_def_otp 
 *   otp默认算法
 *   根据需要可更改
 */
@@ -56,7 +56,7 @@ static void akfs_def_otp(akfs_otp_t *otp)
 }
 
 /**
- * @brief akfs_def_access
+ * @brief akfs_def_access 
  *   otp 校验接口
  *   可根据需要调整算法，需要和akfs对应接口一致即可
  */
@@ -80,7 +80,7 @@ static int akfs_def_access(akfs_t *at)
 }
 
 /**
- * @brief akfs_def_read
+ * @brief akfs_def_read 
  *   从ring读取一条记录
  */
 static int akfs_def_read(akfs_t *at){
@@ -88,7 +88,7 @@ static int akfs_def_read(akfs_t *at){
 }
 
 /**
- * @brief akfs_open
+ * @brief akfs_open 
  *   akfs open操作函数
  *   初始化akfs资源
  */
@@ -96,12 +96,12 @@ int akfs_open(akfs_t *at ,const char *dev)
 {
     int ret = 0;
 
-    at->fd = open(dev ,O_RDWR ,0644);
+    at->fd = open(dev ,O_RDWR ,0644); 
     if(at->fd < 0){
         return -errno;
     }
 
-    ret = akfs_def_get_msize(at);
+    ret = akfs_def_get_msize(at);    
     if(ret){
         goto out;
     }
@@ -125,7 +125,7 @@ out:
 }
 
 /**
- * @brief akfs_close
+ * @brief akfs_close 
  *   akfs close操作接口
  */
 void akfs_close(akfs_t *at){
@@ -133,7 +133,7 @@ void akfs_close(akfs_t *at){
 }
 
 /**
- * @brief akfs_access
+ * @brief akfs_access 
  *   akfs申请权限接口
  *   需要先经过otp校验之后
  *   才可以mmap映射
@@ -152,7 +152,7 @@ int akfs_get_access(akfs_t *at)
         return -errno;
     }
 
-    return 0;
+    return 0; 
 }
 
 void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
@@ -176,7 +176,7 @@ void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
                 return;
             }
 
-       }while(1);
+        }while(1);
         ret = poll(&pd ,2 ,-1);
     }while(1);
 }

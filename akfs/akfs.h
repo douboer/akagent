@@ -11,17 +11,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/types.h>
 #include <errno.h>
 #include <poll.h>
 
 /**
- * @brief  assert_error
+ * @brief  assert_error 
  *
  * @param condition
  * @param error
  *
- * @return
+ * @return 
  */
 #define  assert_error(condition ,error) do{ \
     if(!(condition)){   \
@@ -30,25 +29,25 @@
 }while(0)
 
 /**
- * @brief  assert_ret
+ * @brief  assert_ret 
  *
  * @param !(condition)
  *
- * @return
+ * @return 
  */
 #define  assert_ret(condition)  \
     if(!(condition)){   \
         return; \
-    }
+    }   
 
 /**
- * @brief  assert_goto
+ * @brief  assert_goto 
  *
  * @param condition
  * @param label
  * @param !(condition
  *
- * @return
+ * @return 
  */
 #define  assert_goto(condition ,label ,ops) \
     if(!(condition)){   \
@@ -68,12 +67,12 @@
         continue; \
     }
 /**
- * @brief  assert_void
+ * @brief  assert_void 
  *
  * @param condition
  * @param ops
  *
- * @return
+ * @return 
  */
 #define  assert_void(condition ,ops)    do{ \
     if(!(condition)){   \
@@ -101,7 +100,7 @@ typedef struct akfs_ring_s{
 unsigned int akfs_ring_get(akfs_ring_t *,unsigned char *,unsigned int);
 
 /**
- * @brief akfs内置的IOCTL命令
+ * @brief akfs内置的IOCTL命令 
  */
 #define AKFS_IOCTL_MAGIC 'a'
 
@@ -110,7 +109,7 @@ unsigned int akfs_ring_get(akfs_ring_t *,unsigned char *,unsigned int);
 #define AKFS_IOCTL_OTP _IO(AKFS_IOCTL_MAGIC ,20)
 
 /**
- *@brief otp交互状态
+ *@brief otp交互状态 
  */
 enum AKFS_FSA_S{
     AKFS_FSA_WAIT    = 1,
@@ -120,7 +119,7 @@ enum AKFS_FSA_S{
 };
 
 /**
- *@brief
+ *@brief 
  *  otp相关
  */
 typedef struct akfs_otp_s{
@@ -146,24 +145,35 @@ struct akfs_s{
 };
 
 /**
- * @brief akfs进程数据结构体
+ * @brief akfs进程数据结构体 
  */
-
 typedef struct akfs_process_s{
-    u_int64_t timestamp;				//捕获时间戳
-    unsigned int data_type;			//事件类型
-    pid_t pid;						//进程pid
-    pid_t ppid;						//父进程pid
-    pid_t ptgid;					//父进程tgdi
-    uid_t uid;						//进程用户id
-    pid_t gid;						//进程组id
-    unsigned int ns;				//进程命名空间
-    char parent_name[64];			//父进程名
-    char exec_hash[64];				//进程文件hash
-    char exec_file[256];			//进程全路径
-    char argv[256];					//进程执行时的参数
-}akfs_process_t;
+    u_int64_t timestamp;
+    unsigned int data_type;
+    pid_t pid;
+    pid_t ppid;
+    pid_t ptgid;
+    uid_t uid;
+    pid_t gid;
+    unsigned int ns;
+    char parent_name[64];
+    char exec_hash[64];
+    char exec_file[256];
+    char argv[256];
+}akfs_process_t __attribute__((aligned(8)));
 
+typedef struct akfs_file_s{
+    u_int64_t timestamp;
+    unsigned int data_type;
+    pid_t pid;
+    pid_t ppid;
+    pid_t ptgid;
+    uid_t uid;
+    pid_t gid;
+    unsigned int ns;
+    char exec_file[256];
+    char chg_file[256];
+}akfs_file_t __attribute__((aligned(8)));
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096
@@ -172,13 +182,13 @@ typedef struct akfs_process_s{
 int akfs_open(akfs_t *at ,const char *dev);
 
 /**
- * @brief akfs_close
+ * @brief akfs_close 
  *   akfs close操作接口
  */
 void akfs_close(akfs_t *at);
 
 /**
- * @brief akfs_access
+ * @brief akfs_access 
  *   akfs申请权限接口
  *   需要先经过otp校验之后
  *   才可以mmap映射

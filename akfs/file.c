@@ -1,9 +1,9 @@
 #include "akfs.h"
-#include "process.h"
+#include "file.h"
 
-#define PsUsedPort  65431
+#define FileUsedPort  65432
 
-int process_send2Go(unsigned char *buffer ,unsigned int size){
+int file_send2Go(unsigned char *buffer ,unsigned int size){
     int sock;
     sock = socket(AF_INET, SOCK_DGRAM, 0);
 	if(sock < 0) {
@@ -13,7 +13,7 @@ int process_send2Go(unsigned char *buffer ,unsigned int size){
     struct sockaddr_in sockaddrin;
 	memset(&sockaddrin, 0, sizeof(sockaddrin));
 	sockaddrin.sin_family = AF_INET;
-	sockaddrin.sin_port = htons(PsUsedPort);
+	sockaddrin.sin_port = htons(FileUsedPort);
 	sockaddrin.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     sendto(sock, (char *)buffer, size, 0, (struct sockaddr *)&sockaddrin, sizeof(sockaddrin));
@@ -25,9 +25,9 @@ int process_send2Go(unsigned char *buffer ,unsigned int size){
  * @brief process_callback
  *   回调处理模块
  */
-static int process_callback(unsigned char *buffer ,unsigned int size)
+static int file_callback(unsigned char *buffer ,unsigned int size)
 {
-    process_send2Go(buffer,size);
+    file_send2Go(buffer,size);
 //
 //    akfs_process_t *p = NULL;
 //
@@ -38,12 +38,12 @@ static int process_callback(unsigned char *buffer ,unsigned int size)
     return 0;
 }
 
-int ProcessMonitor(void)
+int FileMonitor(void)
 {
     int ret = 0;
     akfs_t gat;
 
-    ret = akfs_open(&gat ,"/opt/mount/process");
+    ret = akfs_open(&gat ,"/opt/mount/file");
     if(ret){return ret;}
 
     ret = akfs_get_access(&gat);
@@ -52,7 +52,7 @@ int ProcessMonitor(void)
         goto out;
     }
 
-    akfs_loop_read(&gat ,process_callback);
+    akfs_loop_read(&gat ,file_callback);
 
     akfs_close(&gat);
 out:

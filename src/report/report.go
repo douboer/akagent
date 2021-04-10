@@ -24,7 +24,11 @@ var HTTPTransport = &http.Transport{
 	IdleConnTimeout:       60 * time.Second, // 空闲连接的超时时间
 	ExpectContinueTimeout: 30 * time.Second, // 等待服务第一个响应的超时时间
 	MaxIdleConnsPerHost:   100, // 每个host保持的空闲连接数
-	TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	TLSClientConfig: &tls.Config{
+		InsecureSkipVerify: true,
+		MinVersion:tls.VersionTLS12,
+		PreferServerCipherSuites:true,
+	},
 }
 
 func NewHttpReport() *HttpReport {
