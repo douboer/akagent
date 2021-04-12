@@ -111,6 +111,12 @@ unsigned int akfs_ring_get(akfs_ring_t *,unsigned char *,unsigned int);
 #define AKFS_IOCTL_POLICY _IO(AKFS_IOCTL_MAGIC ,30)
 
 /**
+* @brief 模块引用开启关闭
+*/
+#define AKFS_REFER_ON 1 
+#define AKFS_REFER_OFF 0
+
+/**
  *@brief otp交互状态 
  */
 enum AKFS_FSA_S{
