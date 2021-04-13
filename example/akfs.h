@@ -80,6 +80,11 @@
     }   \
 }while(0)
 
+#define NIPQUAD(addr) \
+    ((unsigned char *)&addr)[0], \
+    ((unsigned char *)&addr)[1], \
+    ((unsigned char *)&addr)[2], \
+    ((unsigned char *)&addr)[3] 
 
 /**
  * @brief akfs ring
@@ -184,21 +189,19 @@ typedef struct akfs_file_s{
 }akfs_file_t __attribute__((aligned(8)));
 
 typedef struct akfs_net_s {
+    u_int64_t timestamp;
+    unsigned int data_type;
     pid_t pid;
     uid_t uid;
     pid_t gid;
-    char exec_file[256];
-
-    unsigned int   namespace;
-
-    unsigned short data_type;
-    unsigned int   timestamp;
-
+    unsigned int   ns;
     unsigned int    srcip;
     unsigned int    dstip;
     unsigned short  src_port;
     unsigned short  dst_port;
+    char exec_file[256];
 }akfs_net_t;
+
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 4096

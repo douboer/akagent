@@ -7,10 +7,11 @@
 
 static int net_callback(unsigned char *buffer ,unsigned int size)
 {
-    akfs_net_t *p = NULL;
+    akfs_net_t *net = NULL;
 
-    p = (akfs_net_t *)buffer;
-    printf("exe_file:[%s]\n" ,p->exec_file);
+    net = (akfs_net_t *)buffer;
+
+    printf("data_type:%d, pid:%d, gid:%d, uid:%d, ns:%u, sip:%u.%u.%u.%u,dip:%u.%u.%u.%u, sport:%u, dport:%u task:[%s]\n",net->data_type, net->pid, net->gid, net->uid, net->ns, NIPQUAD(net->srcip),NIPQUAD(net->dstip), ntohs(net->src_port), ntohs(net->dst_port) ,net->exec_file);
 
     return 0;
 }
