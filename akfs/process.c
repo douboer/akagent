@@ -1,25 +1,7 @@
-#include "akfs.h"
 #include "process.h"
+#include "togo.h"
 
 #define PsUsedPort  65431
-
-int process_send2Go(unsigned char *buffer ,unsigned int size){
-    int sock;
-    sock = socket(AF_INET, SOCK_DGRAM, 0);
-	if(sock < 0) {
-		return -1;
-	}
-
-    struct sockaddr_in sockaddrin;
-	memset(&sockaddrin, 0, sizeof(sockaddrin));
-	sockaddrin.sin_family = AF_INET;
-	sockaddrin.sin_port = htons(PsUsedPort);
-	sockaddrin.sin_addr.s_addr = inet_addr("127.0.0.1");
-
-    sendto(sock, (char *)buffer, size, 0, (struct sockaddr *)&sockaddrin, sizeof(sockaddrin));
-    close(sock);
-	return 0;
-}
 
 /**
  * @brief process_callback
@@ -27,7 +9,7 @@ int process_send2Go(unsigned char *buffer ,unsigned int size){
  */
 static int process_callback(unsigned char *buffer ,unsigned int size)
 {
-    process_send2Go(buffer,size);
+    send2Go(buffer,size,PsUsedPort);
 //
 //    akfs_process_t *p = NULL;
 //

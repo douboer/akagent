@@ -111,27 +111,33 @@ func (f *FileMonitor)MonitorStart(){
 				return
 			}
 			f.Analy(data[0:n])
-			f.Report()
+			if f.Filter() {
+				f.Report()
+			}
 		}
 	}()
 }
 
-func (p *FileMonitor)Analy(data []byte){
-	p.FileEvent.New(data)
+func (f *FileMonitor)Analy(data []byte){
+	f.FileEvent.New(data)
 }
 
 //Filter 添加事件监控过滤规则
-func (p *FileMonitor)Filter() bool {
+func (f *FileMonitor)Filter() bool {
+	switch  {
+	case  f.FileEvent.Exe_file == "/usr/bin/mongod":
+		return false
+	}
 	return true
 }
 
-func (p *FileMonitor) Report() {
-	bytesData, _ := json.Marshal(p.FileEvent)
+func (f *FileMonitor) Report() {
+	bytesData, _ := json.Marshal(f.FileEvent)
 
 	log.Print(string(bytesData))
-	if p.ReportType == "https" {
-		p.HttpReport.Content = bytesData
-		p.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/file",p.ReportHost,p.ReportPort)
-		p.HttpReport.Post()
+	if f.ReportType == "https" {
+		f.HttpReport.Content = bytesData
+		f.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/file",f.ReportHost,f.ReportPort)
+		f.HttpReport.Post()
 	}
 }

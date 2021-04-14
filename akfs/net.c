@@ -1,15 +1,15 @@
-#include "file.h"
+#include "net.h"
 #include "togo.h"
 
-#define FileUsedPort  65432
+#define NetUsedPort  65433
 
 /**
  * @brief process_callback
  *   回调处理模块
  */
-static int file_callback(unsigned char *buffer ,unsigned int size)
+static int net_callback(unsigned char *buffer ,unsigned int size)
 {
-    send2Go(buffer,size,FileUsedPort);
+    send2Go(buffer,size,NetUsedPort);
 //
 //    akfs_process_t *p = NULL;
 //
@@ -20,12 +20,12 @@ static int file_callback(unsigned char *buffer ,unsigned int size)
     return 0;
 }
 
-int FileMonitor(void)
+int NetMonitor(void)
 {
     int ret = 0;
     akfs_t gat;
 
-    ret = akfs_open(&gat ,"/opt/mount/file");
+    ret = akfs_open(&gat ,"/opt/mount/net");
     if(ret){return ret;}
 
     ret = akfs_get_access(&gat);
@@ -34,7 +34,7 @@ int FileMonitor(void)
         goto out;
     }
 
-    akfs_loop_read(&gat ,file_callback);
+    akfs_loop_read(&gat ,net_callback);
 
     akfs_close(&gat);
 out:

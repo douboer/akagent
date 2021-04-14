@@ -51,7 +51,10 @@ func (p *ProcessMonitor)MonitorStart(){
 				return
 			}
 			p.Analy(data[0:n])
-			p.Report()
+			if p.Filter() {
+				p.Report()
+			}
+
 		}
 	}()
 }
@@ -67,6 +70,14 @@ func (p *ProcessMonitor)Filter() bool {
 	}
 	switch  {
 	case p.ProcessEvent.Exe_hash == "4d037094cb4d29c0d331caf827df3539":
+		return false
+	case p.ProcessEvent.ParentName == "ksmtuned":
+		return false
+	case p.ProcessEvent.ParentName == "kthreadd":   //管理内核线程的线程
+		return false
+	case p.ProcessEvent.Exe_file == "/usr/libexec/postfix/pickup",p.ProcessEvent.Exe_file == "/usr/libexec/postfix/master":
+		return false
+	case p.ProcessEvent.Exe_file == "/usr/bin/dircolors":  //颜色设置
 		return false
 	}
 

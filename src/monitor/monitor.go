@@ -11,5 +11,9 @@ func MonitorStart(){
 		processMonitor:= NewProcessMonitor()
 		processMonitor.MonitorStart()
 	}
+	if setting.NetMonitorIsUp {
+		netMonitor:= NewNetMonitor()
+		netMonitor.MonitorStart()
+	}
 }
 

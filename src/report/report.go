@@ -47,7 +47,7 @@ func (h *HttpReport)Post() error {
 	}
 	resp, err := h.Client.Do(req)
 	if err != nil {
-		panic("Http Request Failed " + err.Error())
+		return err
 	}
 	defer resp.Body.Close()
 	ioutil.ReadAll(resp.Body) // 如果不及时从请求中获取结果，此连接会占用，其他请求服务复用连接
