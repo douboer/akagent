@@ -177,6 +177,6 @@ void akfs_loop_read(akfs_t *at ,akfs_loop_func_t looper)
             }
 
         }while(1);
-        ret = poll(&pd ,2 ,-1);
+        ret = poll(&pd ,1 ,-1);
     }while(1);
 }

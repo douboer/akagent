@@ -6,17 +6,18 @@ import (
 )
 
 var (
-	PsMonitorIsUp	bool
-	FileMonitorIsUp	bool
-	NetMonitorIsUp	bool
+	PsMonitorIsUp   bool
+	FileMonitorIsUp bool
+	NetMonitorIsUp  bool
 
-	ReportType	string
-	ReportHost	string
-	ReportPort	int
+	ReportType string
+	ReportHost string
+	ReportPort int
 
-	PsUsedPort	int
-	FileUsedPort	int
-	NetUsedPort	int
+	PsUsedPort   int
+	FileUsedPort int
+	NetUsedPort  int
+	ReportEnable bool
 )
 
 func init() {
@@ -27,12 +28,7 @@ func init() {
 	LoadMonitor(file)
 	LoadLocalUsed(file)
 	LoadReport(file)
-
-
-
 }
-
-
 
 func LoadMonitor(file *ini.File) {
 	PsMonitorIsUp = file.Section("monitor").Key("process").MustBool(true)
@@ -47,6 +43,7 @@ func LoadLocalUsed(file *ini.File) {
 }
 
 func LoadReport(file *ini.File) {
+	ReportEnable = file.Section("report").Key("enable").MustBool(false)
 	ReportType = file.Section("report").Key("type").MustString("https")
 	ReportHost = file.Section("report").Key("host").MustString("127.0.0.1")
 	ReportPort = file.Section("report").Key("port").MustInt(8080)

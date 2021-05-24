@@ -1,6 +1,8 @@
 package main
 
-import "akagent/src/monitor"
+import (
+	"akagent/src/monitor"
+)
 
 func main() {
 	monitor.MonitorStart()

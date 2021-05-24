@@ -90,12 +90,11 @@ func NewFileMonitor() *FileMonitor {
 	}
 }
 
-func (f *FileMonitor)MonitorStart(){
+func (p *FileMonitor)MonitorStart(){
 
 	go func() {
-		akfs.FileMonitor()
+		akfs.PsMonitor()
 
-		data := make([]byte, 2048)
 		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.FileUsedPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
@@ -105,18 +104,25 @@ func (f *FileMonitor)MonitorStart(){
 		defer udplistener.Close()
 
 		for {
-			n, _, err := udplistener.ReadFromUDP(data[0:])
-			if err != nil {
-				log.Println(err.Error())
-				return
-			}
-			f.Analy(data[0:n])
-			if f.Filter() {
-				f.Report()
-			}
+			p.readfs(udplistener)
 		}
 	}()
 }
+
+func (p *FileMonitor)readfs(udpConn *net.UDPConn){
+	data := make([]byte, 2048)
+	n, _, err := udpConn.ReadFromUDP(data)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	p.Analy(data[0:n])
+	if p.Filter() {
+		p.Report()
+	}
+}
+
 
 func (f *FileMonitor)Analy(data []byte){
 	f.FileEvent.New(data)
@@ -133,8 +139,12 @@ func (f *FileMonitor)Filter() bool {
 
 func (f *FileMonitor) Report() {
 	bytesData, _ := json.Marshal(f.FileEvent)
-
 	log.Print(string(bytesData))
+
+	if setting.ReportEnable != true{
+		return
+	}
+
 	if f.ReportType == "https" {
 		f.HttpReport.Content = bytesData
 		f.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/file",f.ReportHost,f.ReportPort)

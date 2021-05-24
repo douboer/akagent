@@ -1,9 +1,7 @@
 package akfs
 /*
 #include "akfs.h"
-#include "process.h"
-#include "file.h"
-#include "net.h"
+#include "event.h"
 */
 import "C"
 import (

@@ -35,7 +35,6 @@ func (p *ProcessMonitor)MonitorStart(){
 	go func() {
 		akfs.PsMonitor()
 
-		data := make([]byte, 2048)
 		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.PsUsedPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
@@ -45,18 +44,23 @@ func (p *ProcessMonitor)MonitorStart(){
 		defer udplistener.Close()
 
 		for {
-			n, _, err := udplistener.ReadFromUDP(data[0:])
-			if err != nil {
-				log.Println(err.Error())
-				return
-			}
-			p.Analy(data[0:n])
-			if p.Filter() {
-				p.Report()
-			}
-
+			p.readfs(udplistener)
 		}
 	}()
+}
+
+func (p *ProcessMonitor)readfs(udpConn *net.UDPConn){
+	data := make([]byte, 2048)
+	n, _, err := udpConn.ReadFromUDP(data)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	p.Analy(data[0:n])
+	if p.Filter() {
+		p.Report()
+	}
 }
 
 func (p *ProcessMonitor)Analy(data []byte){
@@ -85,9 +89,15 @@ func (p *ProcessMonitor)Filter() bool {
 }
 
 func (p *ProcessMonitor) Report() {
+
 	bytesData, _ := json.Marshal(p.ProcessEvent)
 
 	log.Print(string(bytesData))
+
+	if setting.ReportEnable != true{
+		return
+	}
+
 	if p.ReportType == "https" {
 		p.HttpReport.Content = bytesData
 		p.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/process",p.ReportHost,p.ReportPort)
