@@ -33,7 +33,7 @@ func NewNetMonitor() *NetMonitor {
 func (p *NetMonitor)MonitorStart(){
 
 	go func() {
-		akfs.PsMonitor()
+		akfs.NetMonitor()
 
 		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.NetUsedPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)

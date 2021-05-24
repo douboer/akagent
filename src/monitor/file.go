@@ -93,7 +93,7 @@ func NewFileMonitor() *FileMonitor {
 func (p *FileMonitor)MonitorStart(){
 
 	go func() {
-		akfs.PsMonitor()
+		akfs.FileMonitor()
 
 		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.FileUsedPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
