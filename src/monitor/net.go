@@ -69,9 +69,13 @@ func (n *NetMonitor)Analy(data []byte){
 
 //Filter 添加事件监控过滤规则
 func (n *NetMonitor)Filter() bool {
+
 	switch  {
 	case n.NetEvent.DstIp == n.ReportHost && n.NetEvent.DstPort == n.ReportPort:  //过滤事件上报日志
 		return false
+	case n.NetEvent.Exe_file == "/usr/sbin/mysqld" && n.NetEvent.UserName == "input":
+		return false
+
 	}
 	return true
 }

@@ -3,9 +3,12 @@ package setting
 import (
 	"fmt"
 	"gopkg.in/ini.v1"
+	"os"
 )
 
 var (
+	ThisPpid uint32
+
 	PsMonitorIsUp   bool
 	FileMonitorIsUp bool
 	NetMonitorIsUp  bool
@@ -25,6 +28,11 @@ func init() {
 	if err != nil {
 		fmt.Println("配置文件读取错误，请检查文件路径:", err)
 	}
+
+	ThisPpid = uint32(os.Getppid())
+
+	fmt.Println(ThisPpid)
+
 	LoadMonitor(file)
 	LoadLocalUsed(file)
 	LoadReport(file)

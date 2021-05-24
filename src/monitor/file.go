@@ -130,8 +130,16 @@ func (f *FileMonitor)Analy(data []byte){
 
 //Filter 添加事件监控过滤规则
 func (f *FileMonitor)Filter() bool {
+	if setting.ThisPpid == f.FileEvent.Ppid{
+		return false
+	}
+
 	switch  {
 	case  f.FileEvent.Exe_file == "/usr/bin/mongod":
+		return false
+	case  f.FileEvent.Exe_file == "/usr/sbin/rsyslogd":
+		return false
+	case  f.FileEvent.Exe_file == "/usr/sbin/mysqld":
 		return false
 	}
 	return true
