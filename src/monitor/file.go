@@ -11,6 +11,7 @@ import (
 	"log"
 	"net"
 	"os/user"
+	"path"
 )
 
 //FileEvent 文件监控接口字段
@@ -130,7 +131,7 @@ func (f *FileMonitor)Analy(data []byte){
 
 //Filter 添加事件监控过滤规则
 func (f *FileMonitor)Filter() bool {
-	if setting.ThisPpid == f.FileEvent.Ppid{
+	if setting.ProcessAbsexefile == f.FileEvent.Exe_file{
 		return false
 	}
 
@@ -141,6 +142,13 @@ func (f *FileMonitor)Filter() bool {
 		return false
 	case  f.FileEvent.Exe_file == "/usr/sbin/mysqld":
 		return false
+	case f.FileEvent.Exe_file == "/usr/local/bin/dockerd" :
+		fileSuffix := path.Ext(f.FileEvent.Chg_file)
+		//log.Println("fileSuffix===============",fileSuffix)
+		if fileSuffix == ".log"{
+			return false
+		}
+
 	}
 	return true
 }

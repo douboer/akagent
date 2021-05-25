@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"gopkg.in/ini.v1"
 	"os"
+	"path/filepath"
 )
 
 var (
 	ThisPpid uint32
+	ProcessAbsexefile string
 
 	PsMonitorIsUp   bool
 	FileMonitorIsUp bool
@@ -32,6 +34,8 @@ func init() {
 	ThisPpid = uint32(os.Getppid())
 
 	fmt.Println(ThisPpid)
+	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	ProcessAbsexefile = fmt.Sprintf("%s/%s",dir,filepath.Base(os.Args[0]))
 
 	LoadMonitor(file)
 	LoadLocalUsed(file)

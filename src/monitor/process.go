@@ -72,9 +72,6 @@ func (p *ProcessMonitor)Filter() bool {
 	if p.ProcessEvent.Ppid == 0 {
 		return false
 	}
-	if setting.ThisPpid == p.ProcessEvent.Ppid{
-		return false
-	}
 
 	switch  {
 	case p.ProcessEvent.Exe_hash == "4d037094cb4d29c0d331caf827df3539":
