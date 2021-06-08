@@ -3,6 +3,7 @@ package monitor
 import (
 	"akagent/akfs"
 	"akagent/setting"
+	"akagent/src/filter"
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net"
 	"os/user"
+	"runtime"
 )
 
 type ProcessMonitor struct {
@@ -19,10 +21,12 @@ type ProcessMonitor struct {
 	ReportType	string
 	ReportHost	string
 	ReportPort	int
+	Name		string
 }
 
 func NewProcessMonitor() *ProcessMonitor {
 	return &ProcessMonitor{
+		Name: "process",
 		ReportType:setting.ReportType,
 		ReportHost:setting.ReportHost,
 		ReportPort:setting.ReportPort,
@@ -73,17 +77,10 @@ func (p *ProcessMonitor)Filter() bool {
 		return false
 	}
 
-	switch  {
-	case p.ProcessEvent.Exe_hash == "4d037094cb4d29c0d331caf827df3539":
-		return false
-	case p.ProcessEvent.ParentName == "ksmtuned":
-		return false
-	case p.ProcessEvent.ParentName == "kthreadd":   //管理内核线程的线程
-		return false
-	case p.ProcessEvent.Exe_file == "/usr/libexec/postfix/pickup",p.ProcessEvent.Exe_file == "/usr/libexec/postfix/master":
-		return false
-	case p.ProcessEvent.Exe_file == "/usr/bin/dircolors":  //颜色设置
-		return false
+	for _,v := range filter.FilterMap[runtime.GOOS][p.Name]{
+		if v.Match(&p.ProcessEvent) {
+			return false
+		}
 	}
 
 	return true

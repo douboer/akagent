@@ -3,6 +3,7 @@ package monitor
 import (
 	"akagent/akfs"
 	"akagent/setting"
+	"akagent/src/filter"
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net"
 	"os/user"
+	"runtime"
 )
 
 type NetMonitor struct {
@@ -19,10 +21,12 @@ type NetMonitor struct {
 	ReportType	string
 	ReportHost	string
 	ReportPort	uint16
+	Name	string
 }
 
 func NewNetMonitor() *NetMonitor {
 	return &NetMonitor{
+		Name: "net",
 		ReportType:setting.ReportType,
 		ReportHost:setting.ReportHost,
 		ReportPort:uint16(setting.ReportPort),
@@ -69,14 +73,17 @@ func (n *NetMonitor)Analy(data []byte){
 
 //Filter 添加事件监控过滤规则
 func (n *NetMonitor)Filter() bool {
-
 	switch  {
 	case n.NetEvent.DstIp == n.ReportHost && n.NetEvent.DstPort == n.ReportPort:  //过滤事件上报日志
 		return false
-	case n.NetEvent.Exe_file == "/usr/sbin/mysqld" && n.NetEvent.UserName == "input":
-		return false
-
 	}
+
+	for _,v := range filter.FilterMap[runtime.GOOS][n.Name]{
+		if v.Match(&n.NetEvent) {
+			return false
+		}
+	}
+
 	return true
 }
 

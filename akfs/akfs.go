@@ -32,7 +32,7 @@ func NetMonitor(){
 	go func() {
 		ok := C.NetMonitor()
 		if ok < 0 {
-			log.Println("FileMonitor error")
+			log.Println("NetMonitor error")
 		}
 	}()
 

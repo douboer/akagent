@@ -3,6 +3,7 @@ package monitor
 import (
 	"akagent/akfs"
 	"akagent/setting"
+	"akagent/src/filter"
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
@@ -11,7 +12,7 @@ import (
 	"log"
 	"net"
 	"os/user"
-	"path"
+	"runtime"
 )
 
 //FileEvent 文件监控接口字段
@@ -80,10 +81,12 @@ type FileMonitor struct {
 	ReportType	string
 	ReportHost	string
 	ReportPort	int
+	Name	string
 }
 
 func NewFileMonitor() *FileMonitor {
 	return &FileMonitor{
+		Name: "file",
 		ReportType:setting.ReportType,
 		ReportHost:setting.ReportHost,
 		ReportPort:setting.ReportPort,
@@ -135,21 +138,12 @@ func (f *FileMonitor)Filter() bool {
 		return false
 	}
 
-	switch  {
-	case  f.FileEvent.Exe_file == "/usr/bin/mongod":
-		return false
-	case  f.FileEvent.Exe_file == "/usr/sbin/rsyslogd":
-		return false
-	case  f.FileEvent.Exe_file == "/usr/sbin/mysqld":
-		return false
-	case f.FileEvent.Exe_file == "/usr/local/bin/dockerd" :
-		fileSuffix := path.Ext(f.FileEvent.Chg_file)
-		//log.Println("fileSuffix===============",fileSuffix)
-		if fileSuffix == ".log"{
+	for _,v := range filter.FilterMap[runtime.GOOS][f.Name]{
+		if v.Match(&f.FileEvent) {
 			return false
 		}
-
 	}
+
 	return true
 }
 

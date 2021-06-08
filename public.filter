@@ -1,0 +1,56 @@
+[
+  {
+    "meta": {
+      "author": "phil",
+      "description": "颜色设置相关进程",
+      "name": "dircolors"
+    },
+    "and": true,
+    "enabled": true,
+
+    "rules": {
+      "exe_file": {
+        "data": "/usr/bin/dircolors",
+        "type": "string"
+      }
+    },
+    "source": "process",
+    "system": "linux"
+  },
+  {
+    "meta": {
+      "author": "phil",
+      "description": "KSM允许虚拟机过度分配内存,默认是开启的",
+      "name": "ksmtuned"
+    },
+    "and": true,
+    "enabled": true,
+
+    "rules": {
+      "parent_name": {
+        "data": "ksmtuned",
+        "type": "string"
+      }
+    },
+    "source": "process",
+    "system": "linux"
+  },
+  {
+    "meta": {
+      "author": "phil",
+      "description": "内核2号进程",
+      "name": "kthreadd"
+    },
+    "and": true,
+    "enabled": true,
+
+    "rules": {
+      "parent_name": {
+        "data": "kthreadd",
+        "type": "string"
+      }
+    },
+    "source": "process",
+    "system": "linux"
+  }
+]
