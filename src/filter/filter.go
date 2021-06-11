@@ -85,6 +85,12 @@ func (f *Filter)filterMatch(val interface{}) bool {
 						isValid = false
 						break
 					}
+				case "number":
+					if filterValue.Data != fmt.Sprintf("%d",field.Interface()) {
+						isValid = false
+						break
+					}
+
 				case "path-ext":
 					fileSuffix := path.Ext(field.Interface().(string))
 					if filterValue.Data != fileSuffix {
@@ -101,6 +107,11 @@ func (f *Filter)filterMatch(val interface{}) bool {
 				switch filterValue.Type {
 				case "string":
 					if filterValue.Data == field.Interface() {
+						isValid = true
+						break
+					}
+				case "number":
+					if filterValue.Data == fmt.Sprintf("%d",field.Interface()) {
 						isValid = true
 						break
 					}

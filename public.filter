@@ -52,5 +52,27 @@
     },
     "source": "process",
     "system": "linux"
+  },
+  {
+    "meta": {
+      "author": "phil",
+      "description": "过滤无用监控",
+      "name": "bash"
+    },
+    "and": true,
+    "enabled": true,
+
+    "rules": {
+      "exe_file": {
+        "data": "/usr/bin/bash",
+        "type": "string"
+      },
+      "data_type": {
+        "data": "2006",
+        "type": "number"
+      }
+    },
+    "source": "file",
+    "system": "linux"
   }
 ]
