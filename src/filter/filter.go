@@ -4,6 +4,7 @@ import (
 	"akagent/setting"
 	"akagent/utils"
 	"fmt"
+	"log"
 	"path"
 	"reflect"
 	"regexp"
@@ -39,6 +40,8 @@ func FilterInit()  {
 	loadFilter(setting.PublicFilter)
 
 	fmt.Println("文件事件相关白名单规则数量:", len(FilterMap[runtime.GOOS]["file"]))
+	fmt.Println("网络事件相关白名单规则数量:", len(FilterMap[runtime.GOOS]["net"]))
+	fmt.Println("进程事件相关白名单规则数量:", len(FilterMap[runtime.GOOS]["process"]))
 }
 
 func loadFilter(filterFile string){
@@ -82,49 +85,49 @@ func (f *Filter)filterMatch(val interface{}) bool {
 				switch filterValue.Type {
 				case "string":
 					if filterValue.Data != field.Interface() {
-						isValid = false
-						break
+						return false
 					}
 				case "number":
 					if filterValue.Data != fmt.Sprintf("%d",field.Interface()) {
-						isValid = false
-						break
+						return false
 					}
 
 				case "path-ext":
 					fileSuffix := path.Ext(field.Interface().(string))
 					if filterValue.Data != fileSuffix {
-						isValid = false
-						break
+						return false
 					}
-				case "regex":
-					if ok, _ := regexp.Match(filterValue.Data, []byte(field.Interface().(string))); !ok {
-						isValid = false
-						break
+				case "regexp":
+					ok, err := regexp.Match(filterValue.Data, []byte(field.Interface().(string)))
+					if err != nil{
+						log.Print(ok, err.Error())
+					}
+					if !ok {
+						return false
 					}
 				}
 			}else{
 				switch filterValue.Type {
 				case "string":
 					if filterValue.Data == field.Interface() {
-						isValid = true
-						break
+						return true
 					}
 				case "number":
 					if filterValue.Data == fmt.Sprintf("%d",field.Interface()) {
-						isValid = true
-						break
+						return true
 					}
 				case "path-ext":
 					fileSuffix := path.Ext(field.Interface().(string))
 					if filterValue.Data == fileSuffix {
-						isValid = true
-						break
+						return true
 					}
-				case "regex":
-					if ok, _ := regexp.Match(filterValue.Data, []byte(field.Interface().(string))); ok {
-						isValid = true
-						break
+				case "regexp":
+					ok, err := regexp.Match(filterValue.Data, []byte(field.Interface().(string)))
+					if err != nil{
+						log.Print(ok, err.Error())
+					}
+					if ok {
+						return true
 					}
 				}
 			}
