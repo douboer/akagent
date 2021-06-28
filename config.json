@@ -1,20 +1,14 @@
-# akagent
-
-#### 介绍
-主机侧用户层代理程序源码，服务获取内核hook数据，进行数据格式化以及策略过滤后发送到服务端。
-
-#### 示例配置(根据需要自行更改)
-```json
 {
   "process_cfg": {
-    "enable": true,
+    "enable": false,
     "use_inner_port": 65431
   },
   "file_cfg": {
     "enable": true,
     "use_inner_port": 65432,
     "monitor_path_map": {
-      "/": "default"
+      "/opt/": "default",
+      "/opt/docker/overlay2/": "docker overlay存储目录"
     },
     "file_resave": {
       "enable": false,
@@ -23,7 +17,7 @@
     }
   },
   "net_cfg": {
-    "enable": true,
+    "enable": false,
     "use_inner_port": 65433
   },
   "report": {
@@ -37,4 +31,3 @@
     "private_filter": "private.filter"
   }
 }
-```

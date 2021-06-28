@@ -7,11 +7,14 @@ import (
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"os"
 	"os/user"
+	"path"
+	"path/filepath"
 	"runtime"
 )
 
@@ -77,29 +80,28 @@ func (f *FileEvent) New(monitorData []byte) {
 
 type FileMonitor struct {
 	HttpReport *report.HttpReport
-	FileEvent FileEvent
-	ReportType	string
-	ReportHost	string
-	ReportPort	int
+	Event FileEvent
 	Name	string
+
+	config 	setting.Config
 }
 
-func NewFileMonitor() *FileMonitor {
+
+
+func NewFileMonitor(cfg setting.Config) *FileMonitor {
 	return &FileMonitor{
 		Name: "file",
-		ReportType:setting.ReportType,
-		ReportHost:setting.ReportHost,
-		ReportPort:setting.ReportPort,
-		HttpReport:report.NewHttpReport(),
+		config: cfg,
+		HttpReport:report.NewHttpReport(cfg),
 	}
 }
 
-func (p *FileMonitor)MonitorStart(){
+func (fM *FileMonitor)MonitorStart(){
 
 	go func() {
 		akfs.FileMonitor()
 
-		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.FileUsedPort))
+		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",fM.config.FileCfg.UseInnerPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
 			log.Print(err.Error())
@@ -108,12 +110,12 @@ func (p *FileMonitor)MonitorStart(){
 		defer udplistener.Close()
 
 		for {
-			p.readfs(udplistener)
+			fM.readfs(udplistener)
 		}
 	}()
 }
 
-func (p *FileMonitor)readfs(udpConn *net.UDPConn){
+func (fM *FileMonitor)readfs(udpConn *net.UDPConn){
 	data := make([]byte, 2048)
 	n, _, err := udpConn.ReadFromUDP(data)
 	if err != nil {
@@ -121,25 +123,55 @@ func (p *FileMonitor)readfs(udpConn *net.UDPConn){
 		return
 	}
 
-	p.Analy(data[0:n])
-	if p.Filter() {
-		p.Report()
+	fM.Analy(data[0:n])
+	if fM.Filter() {
+
+		fM.reSave()
+
+		fM.HttpReport.Report(fM.Event,fM.Name)
 	}
 }
 
+func (fM *FileMonitor)reSave(){
+	if fM.config.FileCfg.FileReSave.Enable {
+		copyFile(fM.Event.Chg_file,fmt.Sprintf("%s/%s",fM.config.FileCfg.FileReSave.SavePath,path.Base(fM.Event.Chg_file)))
+	}
+}
 
-func (f *FileMonitor)Analy(data []byte){
-	f.FileEvent.New(data)
+func (fM *FileMonitor)Analy(data []byte){
+	fM.Event.New(data)
 }
 
 //Filter 添加事件监控过滤规则
-func (f *FileMonitor)Filter() bool {
-	if setting.ProcessAbsexefile == f.FileEvent.Exe_file{
+func (fM *FileMonitor)Filter() bool {
+	if setting.SelfName == filepath.Base(fM.Event.Exe_file){
 		return false
 	}
 
-	for _,v := range filter.FilterMap[runtime.GOOS][f.Name]{
-		if v.Match(&f.FileEvent) {
+
+	if setting.SelfName == filepath.Base(fM.Event.Exe_file) {
+		return false
+	}
+
+	IsMonitorPath := false
+
+	for k,_ :=range fM.config.FileCfg.MonitorPathMap {
+		reled, err := filepath.Rel(k, fM.Event.Chg_file)
+		if err != nil {
+			continue
+		}
+		if !(len(reled)>2 && reled[0:2] == "..") {
+			IsMonitorPath = true
+		}
+	}
+
+	if IsMonitorPath != true { //不在指定目录 不监控
+		return false
+	}
+
+
+	for _,v := range filter.FilterMap[runtime.GOOS][fM.Name]{
+		if v.Match(&fM.Event) {
 			return false
 		}
 	}
@@ -147,17 +179,16 @@ func (f *FileMonitor)Filter() bool {
 	return true
 }
 
-func (f *FileMonitor) Report() {
-	bytesData, _ := json.Marshal(f.FileEvent)
-	log.Print(string(bytesData))
-
-	if setting.ReportEnable != true{
+func copyFile(dstName, srcName string) (written int64, err error) {
+	src, err := os.Open(srcName)
+	if err != nil {
 		return
 	}
-
-	if f.ReportType == "https" {
-		f.HttpReport.Content = bytesData
-		f.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/file",f.ReportHost,f.ReportPort)
-		f.HttpReport.Post()
+	defer src.Close()
+	dst, err := os.OpenFile(dstName, os.O_WRONLY|os.O_CREATE, 0644)
+	if err != nil {
+		return
 	}
+	defer dst.Close()
+	return io.Copy(dst, src)
 }

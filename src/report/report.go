@@ -1,8 +1,12 @@
 package report
 
 import (
+	"akagent/setting"
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -13,6 +17,7 @@ type HttpReport struct {
 	Client	http.Client
 	TargetUrl string
 	Content   []byte
+	Cfg setting.Config
 }
 
 var HTTPTransport = &http.Transport{
@@ -31,21 +36,22 @@ var HTTPTransport = &http.Transport{
 	},
 }
 
-func NewHttpReport() *HttpReport {
+func NewHttpReport(cfg setting.Config) *HttpReport {
 	return &HttpReport{
+		Cfg: cfg,
 		Client: http.Client{Transport: HTTPTransport},
 	}
 }
 
-func (h *HttpReport)Post() error {
+func (hP *HttpReport)Post() error {
 	// 判断 WebHook 通知
-	reader := bytes.NewReader(h.Content)
-	req, err := http.NewRequest(http.MethodPost, h.TargetUrl, reader)
+	reader := bytes.NewReader(hP.Content)
+	req, err := http.NewRequest(http.MethodPost, hP.TargetUrl, reader)
 	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	if err != nil {
 		panic("Http Req Failed " + err.Error())
 	}
-	resp, err := h.Client.Do(req)
+	resp, err := hP.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -53,4 +59,17 @@ func (h *HttpReport)Post() error {
 	ioutil.ReadAll(resp.Body) // 如果不及时从请求中获取结果，此连接会占用，其他请求服务复用连接
 
 	return nil
+}
+
+func (hP *HttpReport)Report(event interface{},name string) {
+	bytesData, _ := json.Marshal(event)
+	log.Infof(string(bytesData))
+
+	if !hP.Cfg.Report.Enable {
+		return
+	}
+
+	hP.Content = bytesData
+	hP.TargetUrl = fmt.Sprintf("%s://%s:%d/log/hids/monitor/%s",hP.Cfg.Report.Type,hP.Cfg.Report.Host,hP.Cfg.Report.Port,name)
+	hP.Post()
 }

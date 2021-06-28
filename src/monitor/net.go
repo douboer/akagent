@@ -7,7 +7,6 @@ import (
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -17,29 +16,25 @@ import (
 
 type NetMonitor struct {
 	HttpReport *report.HttpReport
-	NetEvent NetEvent
-	ReportType	string
-	ReportHost	string
-	ReportPort	uint16
+	Event NetEvent
 	Name	string
+	config 	setting.Config
 }
 
-func NewNetMonitor() *NetMonitor {
+func NewNetMonitor(cfg setting.Config) *NetMonitor {
 	return &NetMonitor{
 		Name: "net",
-		ReportType:setting.ReportType,
-		ReportHost:setting.ReportHost,
-		ReportPort:uint16(setting.ReportPort),
-		HttpReport:report.NewHttpReport(),
+		config: cfg,
+		HttpReport:report.NewHttpReport(cfg),
 	}
 }
 
-func (p *NetMonitor)MonitorStart(){
+func (nM *NetMonitor)MonitorStart(){
 
 	go func() {
 		akfs.NetMonitor()
 
-		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.NetUsedPort))
+		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",nM.config.NetCfg.UseInnerPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
 			log.Print(err.Error())
@@ -48,12 +43,12 @@ func (p *NetMonitor)MonitorStart(){
 		defer udplistener.Close()
 
 		for {
-			p.readfs(udplistener)
+			nM.readfs(udplistener)
 		}
 	}()
 }
 
-func (p *NetMonitor)readfs(udpConn *net.UDPConn){
+func (nM *NetMonitor)readfs(udpConn *net.UDPConn){
 	data := make([]byte, 2048)
 	n, _, err := udpConn.ReadFromUDP(data)
 	if err != nil {
@@ -61,46 +56,30 @@ func (p *NetMonitor)readfs(udpConn *net.UDPConn){
 		return
 	}
 
-	p.Analy(data[0:n])
-	if p.Filter() {
-		p.Report()
+	nM.Analy(data[0:n])
+	if nM.Filter() {
+		nM.HttpReport.Report(nM.Event,nM.Name)
 	}
 }
 
-func (n *NetMonitor)Analy(data []byte){
-	n.NetEvent.New(data)
+func (nM *NetMonitor)Analy(data []byte){
+	nM.Event.New(data)
 }
 
 //Filter 添加事件监控过滤规则
-func (n *NetMonitor)Filter() bool {
+func (nM *NetMonitor)Filter() bool {
 	switch  {
-	case n.NetEvent.DstIp == n.ReportHost && n.NetEvent.DstPort == n.ReportPort:  //过滤事件上报日志
-		return false
+	case nM.config.Report.Enable && nM.Event.DstIp == nM.config.Report.Host && int(nM.Event.DstPort) == nM.config.Report.Port:  //过滤事件上报日志
+			return false
 	}
 
-	for _,v := range filter.FilterMap[runtime.GOOS][n.Name]{
-		if v.Match(&n.NetEvent) {
+	for _,v := range filter.FilterMap[runtime.GOOS][nM.Name]{
+		if v.Match(&nM.Event) {
 			return false
 		}
 	}
 
 	return true
-}
-
-func (n *NetMonitor) Report() {
-
-	bytesData, _ := json.Marshal(n.NetEvent)
-	log.Print(string(bytesData))
-
-	if setting.ReportEnable != true{
-		return
-	}
-	if n.ReportType == "https" {
-		n.HttpReport.Content = bytesData
-		n.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/net",n.ReportHost,n.ReportPort)
-		n.HttpReport.Post()
-	}
-
 }
 
 //NetEvent 网络监控接口字段

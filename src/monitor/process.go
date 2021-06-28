@@ -7,7 +7,6 @@ import (
 	"akagent/src/report"
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -17,29 +16,27 @@ import (
 
 type ProcessMonitor struct {
 	HttpReport *report.HttpReport
-	ProcessEvent ProcessEvent
-	ReportType	string
-	ReportHost	string
-	ReportPort	int
+	Event ProcessEvent
 	Name		string
+
+	config 	setting.Config
 }
 
-func NewProcessMonitor() *ProcessMonitor {
+func NewProcessMonitor(cfg setting.Config) *ProcessMonitor {
+
 	return &ProcessMonitor{
 		Name: "process",
-		ReportType:setting.ReportType,
-		ReportHost:setting.ReportHost,
-		ReportPort:setting.ReportPort,
-		HttpReport:report.NewHttpReport(),
+		config: cfg,
+		HttpReport:report.NewHttpReport(cfg),
 	}
 }
 
-func (p *ProcessMonitor)MonitorStart(){
+func (pM *ProcessMonitor)MonitorStart(){
 
 	go func() {
 		akfs.PsMonitor()
 
-		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",setting.PsUsedPort))
+		localaddress, _ := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d","127.0.0.1",pM.config.ProcessCfg.UseInnerPort))
 		udplistener, err := net.ListenUDP("udp", localaddress)
 		if err != nil {
 			log.Print(err.Error())
@@ -48,12 +45,12 @@ func (p *ProcessMonitor)MonitorStart(){
 		defer udplistener.Close()
 
 		for {
-			p.readfs(udplistener)
+			pM.readfs(udplistener)
 		}
 	}()
 }
 
-func (p *ProcessMonitor)readfs(udpConn *net.UDPConn){
+func (pM *ProcessMonitor)readfs(udpConn *net.UDPConn){
 	data := make([]byte, 2048)
 	n, _, err := udpConn.ReadFromUDP(data)
 	if err != nil {
@@ -61,47 +58,29 @@ func (p *ProcessMonitor)readfs(udpConn *net.UDPConn){
 		return
 	}
 
-	p.Analy(data[0:n])
-	if p.Filter() {
-		p.Report()
+	pM.Analy(data[0:n])
+	if pM.Filter() {
+		pM.HttpReport.Report(pM.Event,pM.Name)
 	}
 }
 
 func (p *ProcessMonitor)Analy(data []byte){
-	p.ProcessEvent.New(data)
+	p.Event.New(data)
 }
 
 //Filter 添加事件监控过滤规则
 func (p *ProcessMonitor)Filter() bool {
-	if p.ProcessEvent.Ppid == 0 {
+	if p.Event.Exe_hash == setting.SelfHash {
 		return false
 	}
 
 	for _,v := range filter.FilterMap[runtime.GOOS][p.Name]{
-		if v.Match(&p.ProcessEvent) {
+		if v.Match(&p.Event) {
 			return false
 		}
 	}
 
 	return true
-}
-
-func (p *ProcessMonitor) Report() {
-
-	bytesData, _ := json.Marshal(p.ProcessEvent)
-
-	log.Print(string(bytesData))
-
-	if setting.ReportEnable != true{
-		return
-	}
-
-	if p.ReportType == "https" {
-		p.HttpReport.Content = bytesData
-		p.HttpReport.TargetUrl = fmt.Sprintf("https://%s:%d/log/hids/monitor/process",p.ReportHost,p.ReportPort)
-		p.HttpReport.Post()
-	}
-
 }
 
 //ProcessEvent 进程监控接口字段

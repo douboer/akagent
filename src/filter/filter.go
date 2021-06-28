@@ -31,13 +31,13 @@ type Filter struct {
 
 var FilterMap  map[string]map[string][]Filter
 
-func FilterInit()  {
+func FilterInit(cfg setting.Config)  {
 	FilterMap = make(map[string]map[string][]Filter)
 
 	FilterMap[runtime.GOOS] = make(map[string][]Filter)
 
-	loadFilter(setting.PrivateFilter)
-	loadFilter(setting.PublicFilter)
+	loadFilter(cfg.FilterCfg.PrivateFilter)
+	loadFilter(cfg.FilterCfg.PublicFilter)
 
 	fmt.Println("文件事件相关白名单规则数量:", len(FilterMap[runtime.GOOS]["file"]))
 	fmt.Println("网络事件相关白名单规则数量:", len(FilterMap[runtime.GOOS]["net"]))
